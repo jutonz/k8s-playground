@@ -4,6 +4,7 @@ RUN DEBIAN_FRONTEND="noninteractive" \
 && apt-get update -y && apt-get install -y \
   software-properties-common \
   wget \
+  locales \
 && rm -rf /var/lib/apt/lists/*
 
 USER root
