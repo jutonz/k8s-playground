@@ -9,8 +9,8 @@ class Docker < Thor
     bash = <<~EOL
       #!/bin/bash -x
 
-      #{sudo}docker #{docker_opts} build -f docker/dev/base/Dockerfile -t jutonz/k8s-playground/dev/base .
-      #{sudo}docker #{docker_opts} build -f docker/dev/ruby/Dockerfile -t jutonz/k8s-playground/dev/ruby .
+      #{sudo}docker #{docker_opts} build -f docker/dev/base/Dockerfile -t jutonz/k8s-playground-dev-base .
+      #{sudo}docker #{docker_opts} build -f docker/dev/ruby/Dockerfile -t jutonz/k8s-playground-dev-ruby .
     EOL
 
     Tempfile.open ["build-script", ".sh"] do |tempfile|
@@ -28,7 +28,13 @@ class Docker < Thor
 
   desc "push", "Upload locally built images to the remote store"
   def push
-    # Push to docker hub/ecr/whatever
+    stream_output "#{sudo}docker tag jutonz/k8s-playground/dev/base jutonz/k8s-playground-dev-base:latest"
+    stream_output "#{sudo}docker tag jutonz/k8s-playground/dev/ruby jutonz/k8s-playground-dev-ruby:latest"
+
+    push_cmd = "#{sudo}docker push jutonz/k8s-playground-dev-base:latest"
+    push_cmd += " && #{sudo}docker push jutonz/k8s-playground-dev-ruby:latest"
+
+    stream_output push_cmd, exec: true
   end
 
   desc "up", "Start your dockerized app server"
