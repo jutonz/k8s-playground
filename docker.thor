@@ -9,8 +9,8 @@ class Docker < Thor
     bash = <<~EOL
       #!/bin/bash -x
 
-      docker #{docker_opts} build -f docker/dev/base/Dockerfile -t jutonz/k8s-playground/dev/base .
-      docker #{docker_opts} build -f docker/dev/ruby/Dockerfile -t jutonz/k8s-playground/dev/ruby .
+      #{sudo}docker #{docker_opts} build -f docker/dev/base/Dockerfile -t jutonz/k8s-playground/dev/base .
+      #{sudo}docker #{docker_opts} build -f docker/dev/ruby/Dockerfile -t jutonz/k8s-playground/dev/ruby .
     EOL
 
     Tempfile.open ["build-script", ".sh"] do |tempfile|
@@ -67,6 +67,10 @@ class Docker < Thor
           stdout.each { |line| puts line }
         end
       end
+    end
+
+    def sudo
+      `uname`.chomp == "Darwin" ? "" : "sudo " # use sudo on linux hosts
     end
 
     def docker_opts
