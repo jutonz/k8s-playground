@@ -2,25 +2,30 @@
 
 require "pty"
 
-# When pushing updated container versions, update these constants. They are
-# used when pushing and pulling images.
-BASE_IMAGE_VERSION = 2
-RUBY_IMAGE_VERSION = 2
-
 class Docker < Thor
-  desc "build", "builds the docker image stack"
-  def build
-    puts "Generating build script"
+  # When pushing updated container versions, update these constants. They are
+  # used when pushing and pulling images.
+  BASE_IMAGE_VERSION = 2
+  RUBY_IMAGE_VERSION = 3
+  PSQL_IMAGE_VERSION = 1
 
-    # This is basically a lightweight docker-compose replacement as the real
-    # thing is, to be completely honest, pretty annoying to setup with a remote
-    # tls-enabled docker host.
-    bash = <<~EOL
-      #!/bin/bash -x
+  ALL_IMAGES = %w(base ruby psql).freeze
 
-      #{sudo}docker #{docker_opts} build -f docker/dev/base/Dockerfile -t jutonz/k8s-playground-dev-base:#{BASE_IMAGE_VERSION} .
-      #{sudo}docker #{docker_opts} build -f docker/dev/ruby/Dockerfile -t jutonz/k8s-playground-dev-ruby:#{RUBY_IMAGE_VERSION} .
-    EOL
+  desc "build", "Build images. Pass image name to build a specific one; otherwise builds all"
+  def build(images = "all")
+    images = ALL_IMAGES if images == "all"
+    images = Array(images)
+
+    puts "Generating build script for #{images.join(", ")}"
+    bash = "#!/bin/bash -x\n"
+
+    images.each do |image|
+      version    = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
+      tag        = "jutonz/k8s-playground-dev-#{image}:#{version}"
+      dockerfile = "docker/dev/#{image}/Dockerfile"
+
+      bash += "#{sudo}docker #{docker_opts} build -f #{dockerfile} -t #{tag} .\n"
+    end
 
     Tempfile.open ["build-script", ".sh"] do |tempfile|
       tempfile.write bash
@@ -36,18 +41,39 @@ class Docker < Thor
   end
 
   desc "push", "Upload locally built images to the remote store"
-  def push
-    tag_cmd = "#{sudo}docker tag jutonz/k8s-playground-dev-base jutonz/k8s-playground-dev-base:#{BASE_IMAGE_VERSION}"
-    puts tag_cmd
-    `#{tag_cmd}`
-    tag_cmd = "#{sudo}docker tag jutonz/k8s-playground-dev-ruby jutonz/k8s-playground-dev-ruby:#{RUBY_IMAGE_VERSION}"
-    puts tag_cmd
-    `#{tag_cmd}`
+  def push(images = "all")
+    images = ALL_IMAGES if images == "all"
+    images = Array(images)
 
-    push_cmd = "#{sudo}docker push jutonz/k8s-playground-dev-base:#{BASE_IMAGE_VERSION}"
-    push_cmd += " && #{sudo}docker push jutonz/k8s-playground-dev-ruby:#{RUBY_IMAGE_VERSION}"
+    push_cmds = []
 
+    images.each do |image|
+      version = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
+      tag_cmd = "#{sudo}docker tag jutonz/k8s-playground-dev-#{image} jutonz/k8s-playground-dev-#{image}:#{version}"
+      puts tag_cmd
+      `#{tag_cmd}`
+
+      push_cmds << "#{sudo}docker push jutonz/k8s-playground-dev-#{image}:#{version}"
+    end
+
+    push_cmd = push_cmds.join " && "
     stream_output push_cmd, exec: true
+  end
+
+  desc "pull", "Pull the latest remote images to your local machine"
+  def pull(images = "all")
+    images = ALL_IMAGES if images == "all"
+    images = Array(images)
+
+    pull_cmds = []
+
+    images.each do |image|
+      version = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
+      pull_cmds << "#{sudo}docker pull jutonz/k8s-playground-dev-#{image}:#{version}"
+    end
+
+    pull_cmd = pull_cmds.join " && "
+    stream_output pull_cmd, exec: true
   end
 
   desc "up", "Start your dockerized app server"
@@ -72,7 +98,8 @@ class Docker < Thor
   end
 
   desc "ssh CONTAINER", "ssh into the given container"
-  def ssh(container = "jutonz/k8s-playground/dev/app")
+  def ssh(container = "ruby")
+    container = "jutonz/k8s-playground-dev-#{container}"
     stream_output "docker run -it --rm --network=bridge --cap-add=SYS_ADMIN #{container} /bin/bash", exec: true
   end
 

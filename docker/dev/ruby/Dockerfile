@@ -6,6 +6,7 @@ RUN export DEBIAN_FRONTEND="noninteractive" \
   && apt-get update -y && apt-get install -y --force-yes \
     ruby2.4 \
     ruby2.4-dev \
+    nodejs \
 && rm -rf /var/lib/apt/lists/* \
 && echo "gem: --no-document > $HOME/.gemrc" \
 && gem install bundler --no-document
