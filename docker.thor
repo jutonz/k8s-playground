@@ -1,3 +1,12 @@
+#!/usr/local/bin/ruby
+
+require "pty"
+
+# When pushing updated container versions, update these constants. They are
+# used when pushing and pulling images.
+BASE_IMAGE_VERSION = 2
+RUBY_IMAGE_VERSION = 2
+
 class Docker < Thor
   desc "build", "builds the docker image stack"
   def build
@@ -9,8 +18,8 @@ class Docker < Thor
     bash = <<~EOL
       #!/bin/bash -x
 
-      #{sudo}docker #{docker_opts} build -f docker/dev/base/Dockerfile -t jutonz/k8s-playground-dev-base .
-      #{sudo}docker #{docker_opts} build -f docker/dev/ruby/Dockerfile -t jutonz/k8s-playground-dev-ruby .
+      #{sudo}docker #{docker_opts} build -f docker/dev/base/Dockerfile -t jutonz/k8s-playground-dev-base:#{BASE_IMAGE_VERSION} .
+      #{sudo}docker #{docker_opts} build -f docker/dev/ruby/Dockerfile -t jutonz/k8s-playground-dev-ruby:#{RUBY_IMAGE_VERSION} .
     EOL
 
     Tempfile.open ["build-script", ".sh"] do |tempfile|
@@ -28,11 +37,15 @@ class Docker < Thor
 
   desc "push", "Upload locally built images to the remote store"
   def push
-    stream_output "#{sudo}docker tag jutonz/k8s-playground/dev/base jutonz/k8s-playground-dev-base:latest"
-    stream_output "#{sudo}docker tag jutonz/k8s-playground/dev/ruby jutonz/k8s-playground-dev-ruby:latest"
+    tag_cmd = "#{sudo}docker tag jutonz/k8s-playground-dev-base jutonz/k8s-playground-dev-base:#{BASE_IMAGE_VERSION}"
+    puts tag_cmd
+    `#{tag_cmd}`
+    tag_cmd = "#{sudo}docker tag jutonz/k8s-playground-dev-ruby jutonz/k8s-playground-dev-ruby:#{RUBY_IMAGE_VERSION}"
+    puts tag_cmd
+    `#{tag_cmd}`
 
-    push_cmd = "#{sudo}docker push jutonz/k8s-playground-dev-base:latest"
-    push_cmd += " && #{sudo}docker push jutonz/k8s-playground-dev-ruby:latest"
+    push_cmd = "#{sudo}docker push jutonz/k8s-playground-dev-base:#{BASE_IMAGE_VERSION}"
+    push_cmd += " && #{sudo}docker push jutonz/k8s-playground-dev-ruby:#{RUBY_IMAGE_VERSION}"
 
     stream_output push_cmd, exec: true
   end
