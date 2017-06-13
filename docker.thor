@@ -4,10 +4,10 @@ require "pty"
 
 class Docker < Thor
   # When pushing updated container versions, update these constants. They are
-  # used when pushing and pulling images.
-  BASE_IMAGE_VERSION = 2
-  RUBY_IMAGE_VERSION = 3
-  PSQL_IMAGE_VERSION = 1
+  # used when pushing, pulling, and building images.
+  BASE_IMAGE_VERSION = 4
+  RUBY_IMAGE_VERSION = 5
+  PSQL_IMAGE_VERSION = 2
 
   ALL_IMAGES = %w(base ruby psql).freeze
 
@@ -49,11 +49,12 @@ class Docker < Thor
 
     images.each do |image|
       version = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
-      tag_cmd = "#{sudo}docker tag jutonz/k8s-playground-dev-#{image} jutonz/k8s-playground-dev-#{image}:#{version}"
+      tag_cmd = "#{sudo}docker tag jutonz/k8s-playground-dev-#{image}:#{version} jutonz/k8s-playground-dev-#{image}:latest"
       puts tag_cmd
       `#{tag_cmd}`
 
       push_cmds << "#{sudo}docker push jutonz/k8s-playground-dev-#{image}:#{version}"
+      push_cmds << "#{sudo}docker push jutonz/k8s-playground-dev-#{image}:latest"
     end
 
     push_cmd = push_cmds.join " && "
@@ -86,7 +87,7 @@ class Docker < Thor
 
   desc "cleanup", "cleans up dangling docker images"
   def cleanup
-    dangling = `docker images --filter dangling=true -q`.split("\n")
+    dangling = `#{sudo}docker images --filter dangling=true -q`.split("\n")
 
     if dangling.none?
       puts "No images to cleanup. Yay!"
@@ -94,13 +95,14 @@ class Docker < Thor
     end
 
     puts "Cleaning up dangling images: #{dangling.join(", ")}"
-    stream_output "docker rmi -f #{dangling.join(" ")}", exec: true
+    stream_output "#{sudo}docker rmi -f #{dangling.join(" ")}", exec: true
   end
 
   desc "ssh CONTAINER", "ssh into the given container"
   def ssh(container = "ruby")
-    container = "jutonz/k8s-playground-dev-#{container}"
-    stream_output "docker run -it --rm --network=bridge --cap-add=SYS_ADMIN #{container} /bin/bash", exec: true
+    version   = self.class.const_get "#{container.upcase}_IMAGE_VERSION"
+    container = "jutonz/k8s-playground-dev-#{container}:#{version}"
+    stream_output "#{sudo}docker run -it --rm --network=bridge --cap-add=SYS_ADMIN --volume #{`pwd`.chomp}:/root #{container} /bin/bash", exec: true
   end
 
   no_commands do

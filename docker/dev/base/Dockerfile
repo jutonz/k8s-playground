@@ -28,20 +28,14 @@ RUN export DEBIAN_FRONTEND="noninteractive" \
   libmagic-dev \
   graphviz \
   python-pip \
-  libreoffice \
-  libreoffice-dev \
   libssl-dev \
   libreadline-dev \
   zlib1g-dev \
   sysv-rc-conf \
-  redis-server \
-  redis-tools \
-  elasticsearch \
-  graphicsmagick \
   libyaml-dev \
   python-dev \
   python3-dev \
-  imagemagick \
   htop \
   sudo \
+  libpq-dev \
 && rm -rf /var/lib/apt/lists/*

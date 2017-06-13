@@ -1,4 +1,4 @@
-FROM jutonz/k8s-playground-dev-base
+FROM jutonz/k8s-playground-dev-base:4
 
 # Install ruby
 RUN export DEBIAN_FRONTEND="noninteractive" \
