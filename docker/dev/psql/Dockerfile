@@ -5,7 +5,7 @@
 #COPY . /root/code/
 #RUN /root/code/bin/rake db:setup && rm -r /root/code
 
-FROM jutonz/k8s-playground-dev-ruby
+FROM jutonz/k8s-playground-dev-ruby:5
 
 COPY . /tmp/
 RUN cd /tmp && ./bin/rake db:setup && rm -r code
