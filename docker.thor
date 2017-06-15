@@ -8,7 +8,7 @@ class Docker < Thor
   # used when pushing, pulling, and building images.
   BASE_IMAGE_VERSION = 5
   RUBY_IMAGE_VERSION = 6
-  PSQL_IMAGE_VERSION = 5
+  PSQL_IMAGE_VERSION = 6
 
   ALL_IMAGES = %w(base ruby psql).freeze
 
@@ -80,7 +80,21 @@ class Docker < Thor
 
   desc "up", "Start your dockerized app server"
   def up
-    stream_output "docker-compose up --abort-on-container-exit", exec: true
+    pidfile = "tmp/pids/server.pid"
+    FileUtils.rm pidfile if File.exist? pidfile
+
+    stream_output "docker-compose up --abort-on-container-exit --force-recreate", exec: true
+  end
+
+  desc "initdb", "Setup initial postgres database"
+  def initdb
+    local_data_dir = "docker/tmp/psql"
+    FileUtils.rm_r local_data_dir if File.exists? local_data_dir # todo prompt
+
+    container = "psql"
+    version   = self.class.const_get "#{container.upcase}_IMAGE_VERSION"
+    container = "jutonz/k8s-playground-dev-psql:#{version}"
+    stream_output "#{sudo}docker run --rm --volume #{`pwd`.chomp}/docker/tmp/psql/:/var/lib/postgresql/data --volume #{`pwd`.chomp}:/tmp/code #{container} /bin/bash -c /etc/initdb.sh", exec: true
   end
 
   desc "cleanup", "cleans up dangling docker images"
@@ -105,8 +119,8 @@ class Docker < Thor
 
   desc "connect CONTAINER", "Connect to a running container"
   def connect(image = "ruby")
-    version   = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
-    image = "jutonz/k8s-playground-dev-#{image}:#{version}"
+    version = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
+    image   = "jutonz/k8s-playground-dev-#{image}:#{version}"
 
     cmd = "#{sudo}docker ps --filter ancestor=#{image} -aq"
     puts cmd

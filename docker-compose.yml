@@ -1,9 +1,9 @@
 version: '3'
 services:
   psql:
-    image: jutonz/k8s-playground-dev-psql:5
+    image: jutonz/k8s-playground-dev-psql:6
     volumes:
-      - ./tmp/psql:/var/lib/postgresql/data
+      - ./docker/tmp/psql:/var/lib/postgresql/data
   web:
     image: jutonz/k8s-playground-dev-ruby:6
     command: bundle exec rails s -p 3000 -b '0.0.0.0'

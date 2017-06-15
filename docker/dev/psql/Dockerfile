@@ -11,19 +11,16 @@ RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.6/main/pg_hba.co
 
 # And add ``listen_addresses`` to ``/etc/postgresql/9.6/main/postgresql.conf``
 RUN echo "listen_addresses='*'" >> /etc/postgresql/9.6/main/postgresql.conf
+RUN echo "data_directory = '/var/lib/postgresql/data'" >> /etc/postgresql/9.6/main/postgresql.conf
+
+RUN mkdir -p /var/lib/postgresql/data && chown -R postgres /var/lib/postgresql
+RUN mkdir -p /var/run/postgresql/9.6-main.pg_stat_tmp && chown -R postgres /var/run/postgresql/9.6-main.pg_stat_tmp
+RUN usermod -aG sudo postgres
 
 WORKDIR /tmp
 
-RUN service postgresql start \
-  && sudo -u postgres psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" \
-  && sudo -u postgres createdb -O docker docker \
-  && service postgresql stop
-
-COPY . /tmp/code
-RUN service postgresql start \
-  && echo "127.0.0.1 psql" >> /etc/hosts \
-  && cd /tmp/code && bundle exec rake db:create db:migrate && rm -rf /tmp/code \
-  && service postgresql stop
+COPY docker/dev/psql/initdb.sh /etc/initdb.sh
+RUN chmod +x /etc/initdb.sh && chown postgres:postgres /etc/initdb.sh
 
 USER postgres
 CMD ["/usr/lib/postgresql/9.6/bin/postgres", "--config-file=/etc/postgresql/9.6/main/postgresql.conf"]

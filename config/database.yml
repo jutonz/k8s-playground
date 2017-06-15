@@ -6,7 +6,7 @@ default: &default
   reconnect: true
   username: docker
   password: docker
-  host: psql
+  host: <%= ENV.fetch "PG_HOST", "psql" %>
 
 development:
   <<: *default
