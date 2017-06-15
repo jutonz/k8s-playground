@@ -21,6 +21,7 @@ RUN export DEBIAN_FRONTEND="noninteractive" \
   vim \
   git \
   curl \
+  tzdata \
   libcurl3 \
   libcurl3-gnutls \
   libcurl4-openssl-dev \

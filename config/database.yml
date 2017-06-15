@@ -4,6 +4,9 @@ default: &default
   timeout: 5000
   encoding: utf8
   reconnect: true
+  username: docker
+  password: docker
+  host: psql
 
 development:
   <<: *default

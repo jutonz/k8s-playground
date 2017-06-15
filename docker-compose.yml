@@ -1,13 +1,15 @@
 version: '3'
 services:
-  #psql:
-    #image: jutonz/k8s-playground-dev-psql:1
+  psql:
+    image: jutonz/k8s-playground-dev-psql:5
   web:
-    image: jutonz/k8s-playground-dev-ruby:3
+    image: jutonz/k8s-playground-dev-ruby:6
     command: bundle exec rails s -p 3000 -b '0.0.0.0'
     volumes:
       - .:/root
     ports:
       - "3000:3000"
-    #depends_on:
-      #- psql
+    depends_on:
+      - psql
+    links:
+      - psql

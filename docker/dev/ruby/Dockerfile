@@ -1,4 +1,4 @@
-FROM jutonz/k8s-playground-dev-base:4
+FROM jutonz/k8s-playground-dev-base:5
 
 # Install ruby
 RUN export DEBIAN_FRONTEND="noninteractive" \
@@ -12,5 +12,5 @@ RUN export DEBIAN_FRONTEND="noninteractive" \
 && gem install bundler --no-document
 
 # Install gems
-COPY Gemfile Gemfile.lock ./
-RUN bundle
+COPY Gemfile Gemfile.lock /tmp/
+RUN bundle --gemfile /tmp/Gemfile

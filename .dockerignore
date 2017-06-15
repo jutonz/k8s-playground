@@ -1,0 +1,10 @@
+.dockerignore
+Dockerfile
+
+.git
+tmp/
+log/
+docker.thor
+
+*.log
+*.pid

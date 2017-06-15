@@ -5,15 +5,15 @@ require "pty"
 class Docker < Thor
   # When pushing updated container versions, update these constants. They are
   # used when pushing, pulling, and building images.
-  BASE_IMAGE_VERSION = 4
-  RUBY_IMAGE_VERSION = 5
-  PSQL_IMAGE_VERSION = 2
+  BASE_IMAGE_VERSION = 5
+  RUBY_IMAGE_VERSION = 6
+  PSQL_IMAGE_VERSION = 5
 
   ALL_IMAGES = %w(base ruby psql).freeze
 
   desc "build", "Build images. Pass image name to build a specific one; otherwise builds all"
-  def build(images = "all")
-    images = ALL_IMAGES if images == "all"
+  def build(*images)
+    images = ALL_IMAGES if images == nil
     images = Array(images)
 
     puts "Generating build script for #{images.join(", ")}"
