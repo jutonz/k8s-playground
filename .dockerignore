@@ -2,7 +2,6 @@
 Dockerfile
 
 .git
-tmp/
 log/
 docker.thor
 

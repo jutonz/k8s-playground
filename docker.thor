@@ -80,7 +80,7 @@ class Docker < Thor
 
   desc "up", "Start your dockerized app server"
   def up
-    stream_output "docker-compose up", exec: true
+    stream_output "docker-compose up --abort-on-container-exit", exec: true
   end
 
   desc "cleanup", "cleans up dangling docker images"
