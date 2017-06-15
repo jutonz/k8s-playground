@@ -1,6 +1,7 @@
 #!/usr/local/bin/ruby
 
 require "pty"
+require "rainbow"
 
 class Docker < Thor
   # When pushing updated container versions, update these constants. They are
@@ -13,7 +14,7 @@ class Docker < Thor
 
   desc "build", "Build images. Pass image name to build a specific one; otherwise builds all"
   def build(*images)
-    images = ALL_IMAGES if images == nil
+    images = ALL_IMAGES if images.empty?
     images = Array(images)
 
     puts "Generating build script for #{images.join(", ")}"
@@ -41,8 +42,8 @@ class Docker < Thor
   end
 
   desc "push", "Upload locally built images to the remote store"
-  def push(images = "all")
-    images = ALL_IMAGES if images == "all"
+  def push(*images)
+    images = ALL_IMAGES if images.empty?
     images = Array(images)
 
     push_cmds = []
@@ -62,8 +63,8 @@ class Docker < Thor
   end
 
   desc "pull", "Pull the latest remote images to your local machine"
-  def pull(images = "all")
-    images = ALL_IMAGES if images == "all"
+  def pull(*images)
+    images = ALL_IMAGES if images.empty?
     images = Array(images)
 
     pull_cmds = []
@@ -79,10 +80,7 @@ class Docker < Thor
 
   desc "up", "Start your dockerized app server"
   def up
-    # Pull remote images and start containers
-    # Meant for devs who don't know anything about docker
-    #
-    # docker run jutonz/k8s-playground/base
+    stream_output "docker-compose up", exec: true
   end
 
   desc "cleanup", "cleans up dangling docker images"
@@ -98,11 +96,28 @@ class Docker < Thor
     stream_output "#{sudo}docker rmi -f #{dangling.join(" ")}", exec: true
   end
 
-  desc "ssh CONTAINER", "ssh into the given container"
-  def ssh(container = "ruby")
+  desc "bash CONTAINER", "Create a new instance of the given image with a bash prompt"
+  def bash(container = "ruby")
     version   = self.class.const_get "#{container.upcase}_IMAGE_VERSION"
     container = "jutonz/k8s-playground-dev-#{container}:#{version}"
-    stream_output "#{sudo}docker run -it --rm --network=bridge --cap-add=SYS_ADMIN --volume #{`pwd`.chomp}:/root #{container} /bin/bash", exec: true
+    stream_output "#{sudo}docker run -it --rm --volume #{`pwd`.chomp}:/root #{container} /bin/bash", exec: true
+  end
+
+  desc "connect CONTAINER", "Connect to a running container"
+  def connect(image = "ruby")
+    version   = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
+    image = "jutonz/k8s-playground-dev-#{image}:#{version}"
+
+    cmd = "#{sudo}docker ps --filter ancestor=#{image} -aq"
+    puts cmd
+    container = `#{cmd}`.chomp
+
+    if container.empty?
+      puts Rainbow("No running containers for image #{image}").red
+      exit 1
+    end
+
+    stream_output "#{sudo}docker exec -it #{container} /bin/bash", exec: true
   end
 
   no_commands do
