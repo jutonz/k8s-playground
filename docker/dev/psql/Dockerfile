@@ -19,8 +19,8 @@ RUN usermod -aG sudo postgres
 
 WORKDIR /tmp
 
-COPY docker/dev/psql/initdb.sh /etc/initdb.sh
+COPY docker/dev/psql/initdb.sh docker/dev/psql/startdb.sh /etc/
 RUN chmod +x /etc/initdb.sh && chown postgres:postgres /etc/initdb.sh
+RUN chmod +x /etc/startdb.sh && chown postgres:postgres /etc/startdb.sh
 
-USER postgres
-CMD ["/usr/lib/postgresql/9.6/bin/postgres", "--config-file=/etc/postgresql/9.6/main/postgresql.conf"]
+CMD ["/bin/bash", "-c", "/etc/startdb.sh"]

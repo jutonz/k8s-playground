@@ -1,5 +1,6 @@
-#!/usr/local/bin/ruby
+#!/usr/bin/ruby
 
+require "thor"
 require "pty"
 require "rainbow"
 
@@ -8,7 +9,7 @@ class Docker < Thor
   # used when pushing, pulling, and building images.
   BASE_IMAGE_VERSION = 5
   RUBY_IMAGE_VERSION = 6
-  PSQL_IMAGE_VERSION = 6
+  PSQL_IMAGE_VERSION = 7
 
   ALL_IMAGES = %w(base ruby psql).freeze
 
@@ -55,7 +56,6 @@ class Docker < Thor
       `#{tag_cmd}`
 
       push_cmds << "#{sudo}docker push jutonz/k8s-playground-dev-#{image}:#{version}"
-      push_cmds << "#{sudo}docker push jutonz/k8s-playground-dev-#{image}:latest"
     end
 
     push_cmd = push_cmds.join " && "
@@ -80,6 +80,13 @@ class Docker < Thor
 
   desc "up", "Start your dockerized app server"
   def up
+    if `which docker-compose`.chomp.empty?
+      error = "Could not find docker-compose executible in path. Please " \
+        "install it to continue"
+      puts Rainbow(error).fg :red
+      exit 1
+    end
+
     pidfile = "tmp/pids/server.pid"
     FileUtils.rm pidfile if File.exist? pidfile
 
@@ -89,7 +96,7 @@ class Docker < Thor
   desc "initdb", "Setup initial postgres database"
   def initdb
     local_data_dir = "docker/tmp/psql"
-    FileUtils.rm_r local_data_dir if File.exists? local_data_dir # todo prompt
+    `#{sudo}rm -r #{local_data_dir}` if File.exists? local_data_dir # todo prompt
 
     container = "psql"
     version   = self.class.const_get "#{container.upcase}_IMAGE_VERSION"
