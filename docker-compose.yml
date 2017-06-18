@@ -1,7 +1,7 @@
 version: '3'
 services:
   psql:
-    image: jutonz/k8s-playground-dev-psql:6
+    image: jutonz/k8s-playground-dev-psql:7
     volumes:
       - ./docker/tmp/psql:/var/lib/postgresql/data
   web:
