@@ -1,5 +1,3 @@
-# k8s-playground
-
 Sample [Kubernetes](kubernetes.io) deployment of a [Rails](http://rubyonrails.org/) app.
 
 ### Getting started
