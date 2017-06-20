@@ -11,51 +11,52 @@ class Docker < Thor
   RUBY_IMAGE_VERSION = 6
   PSQL_IMAGE_VERSION = 7
 
-  ALL_IMAGES = %w(base ruby psql).freeze
+  NGINX_IMAGE_VERSION = 1
+  RAILS_APP_VERSION = 1
+
+  #ALL_IMAGES = %w(base ruby psql nginx rails).freeze
+  ALL_IMAGES = {
+    "dev"  => %w(base ruby psql),
+    "prod" => %w(nginx rails)
+  }.freeze
 
   desc "build", "Build images. Pass image name to build a specific one; otherwise builds all"
+  option :env, default: "dev", type: :string
   def build(*images)
-    images = ALL_IMAGES if images.empty?
+    env = options[:env]
+    images = ALL_IMAGES[env] if images.empty?
     images = Array(images)
 
     puts "Generating build script for #{images.join(", ")}"
-    bash = "#!/bin/bash -x\n"
+    commands = []
 
     images.each do |image|
       version    = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
-      tag        = "jutonz/k8s-playground-dev-#{image}:#{version}"
-      dockerfile = "docker/dev/#{image}/Dockerfile"
+      tag        = "jutonz/k8s-playground-#{env}-#{image}:#{version}"
+      dockerfile = "docker/#{env}/#{image}/Dockerfile"
 
-      bash += "#{sudo}docker #{docker_opts} build -f #{dockerfile} -t #{tag} .\n"
+      commands << "#{sudo}docker #{docker_opts} build -f #{dockerfile} -t #{tag} ."
     end
 
-    Tempfile.open ["build-script", ".sh"] do |tempfile|
-      tempfile.write bash
-      tempfile.flush
-
-      puts "Build script written to #{tempfile.path}"
-
-      puts "I will need your password to make the build script executable"
-      `sudo chmod +x #{tempfile.path}`
-
-      exec "/bin/bash -c #{tempfile.path}" # totally legit
-    end
+    stream_output commands.join(" && "), exec: true
   end
 
   desc "push", "Upload locally built images to the remote store"
+  option :env, default: "dev", type: :string
   def push(*images)
-    images = ALL_IMAGES if images.empty?
+    env = options[:env]
+    images = ALL_IMAGES[env] if images.empty?
     images = Array(images)
 
     push_cmds = []
 
     images.each do |image|
       version = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
-      tag_cmd = "#{sudo}docker tag jutonz/k8s-playground-dev-#{image}:#{version} jutonz/k8s-playground-dev-#{image}:latest"
+      tag_cmd = "#{sudo}docker tag jutonz/k8s-playground-#{env}-#{image}:#{version} jutonz/k8s-playground-#{env}-#{image}:latest"
       puts tag_cmd
       `#{tag_cmd}`
 
-      push_cmds << "#{sudo}docker push jutonz/k8s-playground-dev-#{image}:#{version}"
+      push_cmds << "#{sudo}docker push jutonz/k8s-playground-#{env}-#{image}:#{version}"
     end
 
     push_cmd = push_cmds.join " && "
@@ -63,15 +64,17 @@ class Docker < Thor
   end
 
   desc "pull", "Pull the latest remote images to your local machine"
+  option :env, default: "dev", type: :string
   def pull(*images)
-    images = ALL_IMAGES if images.empty?
+    env = options[:env]
+    images = ALL_IMAGES[env] if images.empty?
     images = Array(images)
 
     pull_cmds = []
 
     images.each do |image|
       version = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
-      pull_cmds << "#{sudo}docker pull jutonz/k8s-playground-dev-#{image}:#{version}"
+      pull_cmds << "#{sudo}docker pull jutonz/k8s-playground-#{env}-#{image}:#{version}"
     end
 
     pull_cmd = pull_cmds.join " && "
@@ -118,16 +121,20 @@ class Docker < Thor
   end
 
   desc "bash CONTAINER", "Create a new instance of the given image with a bash prompt"
+  option :env, default: "dev", type: :string
   def bash(container = "ruby")
+    env = options[:env]
     version   = self.class.const_get "#{container.upcase}_IMAGE_VERSION"
-    container = "jutonz/k8s-playground-dev-#{container}:#{version}"
+    container = "jutonz/k8s-playground-#{env}-#{container}:#{version}"
     stream_output "#{sudo}docker run -it --rm --volume #{`pwd`.chomp}:/root #{container} /bin/bash", exec: true
   end
 
   desc "connect CONTAINER", "Connect to a running container"
+  option :env, default: "dev", type: :string
   def connect(image = "ruby")
+    env = options[:env]
     version = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
-    image   = "jutonz/k8s-playground-dev-#{image}:#{version}"
+    image   = "jutonz/k8s-playground-#{env}-#{image}:#{version}"
 
     cmd = "#{sudo}docker ps --filter ancestor=#{image} -aq"
     puts cmd
