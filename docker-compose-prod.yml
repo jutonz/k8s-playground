@@ -1,0 +1,16 @@
+version: '3'
+services:
+  rails:
+    image: jutonz/k8s-playground-prod-rails:3
+  psql:
+    image: jutonz/k8s-playground-prod-psql:1
+  nginx:
+    image: jutonz/k8s-playground-prod-nginx:6
+    ports:
+      - '4444:80'
+    depends_on:
+      - rails
+      - psql
+    links:
+      - rails
+      - psql

@@ -7,17 +7,30 @@ require "rainbow"
 class Docker < Thor
   # When pushing updated container versions, update these constants. They are
   # used when pushing, pulling, and building images.
-  BASE_IMAGE_VERSION = 5
-  RUBY_IMAGE_VERSION = 6
-  PSQL_IMAGE_VERSION = 7
+  #BASE_IMAGE_VERSION = 5
+  #RUBY_IMAGE_VERSION = 6
+  #PSQL_IMAGE_VERSION = 7
 
-  NGINX_IMAGE_VERSION = 1
-  RAILS_IMAGE_VERSION = 3
+  #NGINX_IMAGE_VERSION = 6
+  #RAILS_IMAGE_VERSION = 3
+
+  VERSIONS = {
+    "dev" => {
+      "base" => 5,
+      "ruby" => 7,
+      "psql" => 7
+    },
+    "prod" => {
+      "nginx" => 6,
+      "rails" => 3,
+      "psql"  => 1
+    }
+  }.freeze
 
   #ALL_IMAGES = %w(base ruby psql nginx rails).freeze
   ALL_IMAGES = {
     "dev"  => %w(base ruby psql),
-    "prod" => %w(nginx rails)
+    "prod" => %w(nginx rails psql)
   }.freeze
 
   desc "build", "Build images. Pass image name to build a specific one; otherwise builds all"
@@ -31,7 +44,7 @@ class Docker < Thor
     commands = []
 
     images.each do |image|
-      version    = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
+      version    = VERSIONS.dig env, image
       tag        = "jutonz/k8s-playground-#{env}-#{image}:#{version}"
       dockerfile = "docker/#{env}/#{image}/Dockerfile"
 
@@ -51,7 +64,7 @@ class Docker < Thor
     push_cmds = []
 
     images.each do |image|
-      version = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
+      version = VERSIONS.dig env, image
       tag_cmd = "#{sudo}docker tag jutonz/k8s-playground-#{env}-#{image}:#{version} jutonz/k8s-playground-#{env}-#{image}:latest"
       puts tag_cmd
       `#{tag_cmd}`
@@ -73,7 +86,7 @@ class Docker < Thor
     pull_cmds = []
 
     images.each do |image|
-      version = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
+      version = VERSIONS.dig env, image
       pull_cmds << "#{sudo}docker pull jutonz/k8s-playground-#{env}-#{image}:#{version}"
     end
 
@@ -102,7 +115,7 @@ class Docker < Thor
     `#{sudo}rm -r #{local_data_dir}` if File.exists? local_data_dir # todo prompt
 
     container = "psql"
-    version   = self.class.const_get "#{container.upcase}_IMAGE_VERSION"
+    version = VERSIONS.dig "dev", container
     container = "jutonz/k8s-playground-dev-psql:#{version}"
     stream_output "#{sudo}docker run --rm --volume #{`pwd`.chomp}/docker/tmp/psql/:/var/lib/postgresql/data --volume #{`pwd`.chomp}:/tmp/code #{container} /bin/bash -c /etc/initdb.sh", exec: true
   end
@@ -132,8 +145,8 @@ class Docker < Thor
   desc "connect CONTAINER", "Connect to a running container"
   option :env, default: "dev", type: :string
   def connect(image = "ruby")
-    env = options[:env]
-    version = self.class.const_get "#{image.upcase}_IMAGE_VERSION"
+    env     = options[:env]
+    version = VERSIONS.dig env, image
     image   = "jutonz/k8s-playground-#{env}-#{image}:#{version}"
 
     cmd = "#{sudo}docker ps --filter ancestor=#{image} -aq"
