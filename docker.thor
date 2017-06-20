@@ -12,7 +12,7 @@ class Docker < Thor
   PSQL_IMAGE_VERSION = 7
 
   NGINX_IMAGE_VERSION = 1
-  RAILS_IMAGE_VERSION = 2
+  RAILS_IMAGE_VERSION = 3
 
   #ALL_IMAGES = %w(base ruby psql nginx rails).freeze
   ALL_IMAGES = {
