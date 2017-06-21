@@ -1,22 +1,18 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: rails
   name: rails
 spec:
   replicas: 1
-  strategy: {}
+  selector:
+    matchLabels:
+      app: rails
   template:
     metadata:
-      creationTimestamp: null
       labels:
-        io.kompose.service: rails
+        app: rails
     spec:
       containers:
       - image: jutonz/k8s-playground-prod-rails:4
         name: rails
-        resources: {}
       restartPolicy: Always
-status: {}

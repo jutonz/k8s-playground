@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-proxy
+spec:
+  containers:
+  - name: proxy-tcp
+    image: gcr.io/google_containers/proxy-to-service:v2
+    args: [ "tcp", "4444", "nginx" ]
+    ports:
+    - name: tcp
+      protocol: TCP
+      containerPort: 4444
+      hostPort: 4444

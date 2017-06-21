@@ -4,17 +4,17 @@ metadata:
   name: nginx
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: nginx
+  strategy: {}
   template:
-    metadata:
-      labels:
-        app: nginx
     spec:
       containers:
       - image: jutonz/k8s-playground-prod-nginx:6
         name: nginx
         ports:
         - containerPort: 80
+        resources: {}
+      - image: jutonz/k8s-playground-prod-rails:4
+        name: rails
+        resources: {}
       restartPolicy: Always
+status: {}
