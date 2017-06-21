@@ -4,4 +4,5 @@ WORKDIR /root/code
 COPY . ./
 RUN rm -r tmp/
 
-CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+COPY docker/prod/rails/init.sh /etc/
+CMD ["/bin/bash", "-c", "/etc/init.sh"]

@@ -3,12 +3,12 @@ services:
   psql:
     image: jutonz/k8s-playground-dev-psql:7
     volumes:
-      - ./docker/tmp/psql:/var/lib/postgresql/data
+      - ../../tmp/psql:/var/lib/postgresql/data
   web:
     image: jutonz/k8s-playground-dev-ruby:7
     command: bundle exec rails s -p 3000 -b '0.0.0.0'
     volumes:
-      - .:/root
+      - ../../:/root
     ports:
       - '3000:3000'
     depends_on:

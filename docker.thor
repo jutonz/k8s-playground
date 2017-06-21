@@ -7,13 +7,6 @@ require "rainbow"
 class Docker < Thor
   # When pushing updated container versions, update these constants. They are
   # used when pushing, pulling, and building images.
-  #BASE_IMAGE_VERSION = 5
-  #RUBY_IMAGE_VERSION = 6
-  #PSQL_IMAGE_VERSION = 7
-
-  #NGINX_IMAGE_VERSION = 6
-  #RAILS_IMAGE_VERSION = 3
-
   VERSIONS = {
     "dev" => {
       "base" => 5,
@@ -22,7 +15,7 @@ class Docker < Thor
     },
     "prod" => {
       "nginx" => 6,
-      "rails" => 3,
+      "rails" => 4,
       "psql"  => 1
     }
   }.freeze
@@ -79,7 +72,7 @@ class Docker < Thor
   desc "pull", "Pull the latest remote images to your local machine"
   option :env, default: "dev", type: :string
   def pull(*images)
-    env = options[:env]
+    env    = options[:env]
     images = ALL_IMAGES[env] if images.empty?
     images = Array(images)
 
@@ -95,6 +88,7 @@ class Docker < Thor
   end
 
   desc "up", "Start your dockerized app server"
+  option :env, default: "dev", type: :string
   def up
     if `which docker-compose`.chomp.empty?
       error = "Could not find docker-compose executible in path. Please " \
@@ -106,18 +100,21 @@ class Docker < Thor
     pidfile = "tmp/pids/server.pid"
     FileUtils.rm pidfile if File.exist? pidfile
 
-    stream_output "docker-compose up --abort-on-container-exit --force-recreate", exec: true
+    env = options[:env]
+    compose_file = File.expand_path "docker/#{env}/docker-compose.yml"
+
+    stream_output "#{sudo}docker-compose -f #{compose_file} up --abort-on-container-exit --force-recreate", exec: true
   end
 
   desc "initdb", "Setup initial postgres database"
   def initdb
-    local_data_dir = "docker/tmp/psql"
+    local_data_dir = File.expand_path "../tmp/psql", __FILE__
     `#{sudo}rm -r #{local_data_dir}` if File.exists? local_data_dir # todo prompt
 
     container = "psql"
     version = VERSIONS.dig "dev", container
     container = "jutonz/k8s-playground-dev-psql:#{version}"
-    stream_output "#{sudo}docker run --rm --volume #{`pwd`.chomp}/docker/tmp/psql/:/var/lib/postgresql/data --volume #{`pwd`.chomp}:/tmp/code #{container} /bin/bash -c /etc/initdb.sh", exec: true
+    stream_output "#{sudo}docker run --rm --volume #{local_data_dir}:/var/lib/postgresql/data --volume #{`pwd`.chomp}:/tmp/code #{container} /bin/bash -c /etc/initdb.sh", exec: true
   end
 
   desc "cleanup", "cleans up dangling docker images"
