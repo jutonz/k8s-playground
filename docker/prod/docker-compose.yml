@@ -1,16 +1,16 @@
-version: '3'
+version: "2"
 services:
-  rails:
-    image: jutonz/k8s-playground-prod-rails:4
-  psql:
-    image: jutonz/k8s-playground-prod-psql:1
   nginx:
-    image: jutonz/k8s-playground-prod-nginx:6
-    ports:
-      - '4444:80'
     depends_on:
       - rails
       - psql
+    image: "jutonz/k8s-playground-prod-nginx:6"
     links:
       - rails
       - psql
+    ports:
+      - "4444:80"
+  psql:
+    image: "jutonz/k8s-playground-prod-psql:1"
+  rails:
+    image: "jutonz/k8s-playground-prod-rails:4"

@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: psql
+  name: psql
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: psql
+    spec:
+      containers:
+      - image: jutonz/k8s-playground-prod-psql:1
+        name: psql
+        resources: {}
+      restartPolicy: Always
+status: {}
