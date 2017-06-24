@@ -14,7 +14,7 @@ class Docker < Thor
       "psql" => 7
     },
     "prod" => {
-      "nginx" => 6,
+      "nginx" => 10,
       "rails" => 4,
       "psql"  => 1
     }
