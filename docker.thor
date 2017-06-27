@@ -10,12 +10,12 @@ class Docker < Thor
   VERSIONS = {
     "dev" => {
       "base" => 5,
-      "ruby" => 7,
+      "ruby" => 8,
       "psql" => 7
     },
     "prod" => {
       "nginx" => 10,
-      "rails" => 4,
+      "rails" => 5,
       "psql"  => 1
     }
   }.freeze

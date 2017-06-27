@@ -1,4 +1,4 @@
-FROM jutonz/k8s-playground-dev-ruby:7
+FROM jutonz/k8s-playground-dev-ruby:8
 
 WORKDIR /root/code
 COPY . ./
