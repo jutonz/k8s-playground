@@ -13,15 +13,8 @@ spec:
         app: nginx
     spec:
       containers:
-      - image: jutonz/k8s-playground-prod-nginx:10
+      - image: jutonz/k8s-playground-prod-nginx:13
         name: nginx
-        volumeMounts:
-          - mountPath: /etc/ssl/mycerts/
-            name: tls-certs
         ports:
-        - containerPort: 443
+        - containerPort: 80
       restartPolicy: Always
-      volumes:
-      - name: tls-certs
-        hostPath:
-          path: /etc/ssl/mycerts
