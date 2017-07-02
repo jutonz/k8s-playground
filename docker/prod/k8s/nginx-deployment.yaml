@@ -25,5 +25,3 @@ spec:
           initialDelaySeconds: 30
           timeoutSeconds: 5
       restartPolicy: Always
-      nodeSelector:
-        kubernetes.io/hostname: k8s-master
