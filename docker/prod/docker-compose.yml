@@ -4,13 +4,13 @@ services:
     depends_on:
       - rails
       - psql
-    image: "jutonz/k8s-playground-prod-nginx:6"
+    image: jutonz/k8s-playground-prod-nginx:15
     links:
       - rails
       - psql
     ports:
       - "4444:80"
   psql:
-    image: "jutonz/k8s-playground-prod-psql:1"
+    image: jutonz/k8s-playground-prod-psql:1
   rails:
-    image: "jutonz/k8s-playground-prod-rails:4"
+    image: jutonz/k8s-playground-prod-rails:5

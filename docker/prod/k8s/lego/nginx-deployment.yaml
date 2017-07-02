@@ -36,4 +36,4 @@ spec:
         - containerPort: 443
         args:
         - /nginx-ingress-controller
-        - --default-backend-service=nginx-ingress/default-http-backend
+        - --default-backend-service=default/nginx

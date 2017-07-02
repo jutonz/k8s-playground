@@ -13,8 +13,17 @@ spec:
         app: nginx
     spec:
       containers:
-      - image: jutonz/k8s-playground-prod-nginx:13
+      - image: jutonz/k8s-playground-prod-nginx:17
         name: nginx
         ports:
         - containerPort: 80
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
       restartPolicy: Always
+      nodeSelector:
+        kubernetes.io/hostname: k8s-master

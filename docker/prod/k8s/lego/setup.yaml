@@ -37,6 +37,12 @@ metadata:
   name: ingress
   namespace: nginx-ingress
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ingress
+  namespace: kube-lego
+---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
@@ -54,9 +60,14 @@ rules:
   - nodes
   - pods
   - configmaps
+  - events
   verbs:
   - list
   - watch
+  - get
+  - create
+  - delete
+  - patch
 - apiGroups:
   - "extensions"
   resources:
@@ -134,3 +145,6 @@ subjects:
   - kind: ServiceAccount
     name: ingress
     namespace: nginx-ingress
+  - kind: ServiceAccount
+    name: ingress
+    namespace: kube-lego

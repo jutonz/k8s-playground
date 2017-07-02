@@ -14,7 +14,7 @@ class Docker < Thor
       "psql" => 7
     },
     "prod" => {
-      "nginx" => 13,
+      "nginx" => 17,
       "rails" => 5,
       "psql"  => 1
     }
@@ -132,11 +132,11 @@ class Docker < Thor
 
   desc "bash CONTAINER", "Create a new instance of the given image with a bash prompt"
   option :env, default: "dev", type: :string
-  def bash(container = "ruby")
-    env = options[:env]
-    version   = self.class.const_get "#{container.upcase}_IMAGE_VERSION"
-    container = "jutonz/k8s-playground-#{env}-#{container}:#{version}"
-    stream_output "#{sudo}docker run -it --rm --volume #{`pwd`.chomp}:/root #{container} /bin/bash", exec: true
+  def bash(image = "ruby")
+    env     = options[:env]
+    version = VERSIONS.dig env, image
+    image   = "jutonz/k8s-playground-#{env}-#{image}:#{version}"
+    stream_output "#{sudo}docker run -it --rm --volume #{`pwd`.chomp}:/root #{image} /bin/bash", exec: true
   end
 
   desc "connect CONTAINER", "Connect to a running container"

@@ -5,8 +5,11 @@ metadata:
   namespace: default
 spec:
   ports:
-  - name: http
-    port: 80
-    targetPort: 80
+  - port: 80
+    name: http-upgrade
+  - port: 443
+    name: https
   selector:
     app: nginx
+  externalIPs:
+    - 104.131.21.142
