@@ -63,3 +63,26 @@ For your Rails image to connect to your Postgres image, then, it's not (quite) a
 Containers are inhernetly transient, meaning that data does not automatically persist across multiple runs of the same container. For anything to exist outside of the regular container lifecycle, it must be persisted to the host machine running Docker (e.g. your computer) via [volumes](https://docs.docker.com/engine/tutorials/dockervolumes/). A volume basically ferries data between your local machine and the OS running in a container such that modifications made on one are reflected in the other.
 
 Data added to your Postgres image is persisted in this way. Essentially, the Postgres processes responsible for doing things like responding to API calls, etc, runs in the `psql` image, but any data committed to your database lives in `docker/tmp/psql` on your local machine. This way you can shut down your `psql` image and still have the data accessible next time you bring it up.
+
+
+### How To's
+Things work slightly differently when your development environment is container-based. Here is a collection of things that might work silghtly differently for you if you're coming from a different dev setup.
+
+
+#### How to update gem dependencies
+The `dev-ruby` container comes pre-packaged with all the gems currently in use in the `master` branch. To use a different version of a gem locally, you have to run `bundle update` from inside a running `dev-ruby` container.
+
+1. Update `Gemfile` to reflect whatever new or updated gems you want installed.
+2. If it's not already running, start your app server:
+  ```bash
+  $ thor docker:up
+  ```
+2. In another terminal, connect to the `dev-ruby` container:
+  ```bash
+  $ thor docker:connect ruby
+  ```
+3. Run whatever bundle commands you need to, e.g.
+  ```bash
+  $ bundle install
+  ```
+4. Go back to the terminal where your app server is running and restart it. You can do this by entering `Control + C` to stop it and then running `thor docker:up` again to bring it back up. Your app is now running with the updated gemset.
