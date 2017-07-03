@@ -5,7 +5,7 @@ services:
     volumes:
       - ../../tmp/psql:/var/lib/postgresql/data
   web:
-    image: jutonz/k8s-playground-dev-ruby:7
+    image: jutonz/k8s-playground-dev-ruby:8
     command: bundle exec rails s -p 3000 -b '0.0.0.0'
     volumes:
       - ../../:/root
