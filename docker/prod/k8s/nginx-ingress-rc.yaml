@@ -1,3 +1,6 @@
+# Also includes relevant SerivceAccounts to give replication controller all the
+# permissions it needs.
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:

@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: nginx-ingress
+  name: nginx-ingress-biz
   namespace: default
   annotations:
     kubernetes.io/tls-acme: "true"
@@ -9,10 +9,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - wee.jutonz.com
-    secretName: wee-lego-secret
+    - rails.notmalware.biz
+    secretName: notmalware-lego-secret
   rules:
-  - host: wee.jutonz.com
+  - host: rails.notmalware.biz
     http:
       paths:
       - path: /
