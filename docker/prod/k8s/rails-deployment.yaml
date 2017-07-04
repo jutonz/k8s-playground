@@ -14,6 +14,6 @@ spec:
         app: rails
     spec:
       containers:
-      - image: jutonz/k8s-playground-prod-rails:5
+      - image: jutonz/k8s-playground-prod-rails:6
         name: rails
       restartPolicy: Always

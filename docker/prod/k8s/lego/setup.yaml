@@ -45,6 +45,7 @@ rules:
   - delete
   - patch
   - put
+  - update
 - apiGroups:
   - "extensions"
   resources:

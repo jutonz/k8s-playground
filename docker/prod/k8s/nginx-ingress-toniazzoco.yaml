@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: nginx-ingress-biz
+  name: nginx-ingress-toniazzoco
   namespace: default
   annotations:
     kubernetes.io/tls-acme: "true"
@@ -9,10 +9,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - www3.notmalware.biz
-    secretName: notmalware-lego-secret
+    - toniazzo.co
+    secretName: toniazzoco-lego-secret
   rules:
-  - host: www3.notmalware.biz
+  - host: toniazzo.co
     http:
       paths:
       - path: /

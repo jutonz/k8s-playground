@@ -10,12 +10,12 @@ class Docker < Thor
   VERSIONS = {
     "dev" => {
       "base" => 5,
-      "ruby" => 8,
+      "ruby" => 9,
       "psql" => 7
     },
     "prod" => {
       "nginx" => 17,
-      "rails" => 5,
+      "rails" => 6,
       "psql"  => 1
     }
   }.freeze
@@ -103,7 +103,13 @@ class Docker < Thor
     env = options[:env]
     compose_file = File.expand_path "docker/#{env}/docker-compose.yml"
 
-    stream_output "#{sudo}docker-compose -f #{compose_file} up --abort-on-container-exit --force-recreate", exec: true
+    up_args = %w(
+      --abort-on-container-exit
+      --force-recreate
+    ).join(" ")
+    up_args = ''
+
+    stream_output "#{sudo}docker-compose -f #{compose_file} up #{up_args}", exec: true
   end
 
   desc "initdb", "Setup initial postgres database"
