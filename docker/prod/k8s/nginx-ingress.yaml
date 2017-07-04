@@ -9,10 +9,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - wee.jutonz.com
-    secretName: wee-lego-secret
+    - k8s.jutonz.com
+    secretName: k8s-lego-secret
   rules:
-  - host: wee.jutonz.com
+  - host: k8s.jutonz.com
     http:
       paths:
       - path: /

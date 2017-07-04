@@ -13,14 +13,14 @@ spec:
         app: nginx
     spec:
       containers:
-      - image: jutonz/k8s-playground-prod-nginx:17
+      - image: jutonz/k8s-playground-prod-nginx:18
         name: nginx
         ports:
         - containerPort: 80
         livenessProbe:
           httpGet:
             path: /healthz
-            port: 8080
+            port: 80
             scheme: HTTP
           initialDelaySeconds: 30
           timeoutSeconds: 5

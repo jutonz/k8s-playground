@@ -9,10 +9,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - toniazzo.co
+    - wee.toniazzo.co
     secretName: toniazzoco-lego-secret
   rules:
-  - host: toniazzo.co
+  - host: wee.toniazzo.co
     http:
       paths:
       - path: /
